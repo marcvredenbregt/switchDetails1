@@ -3,55 +3,86 @@ export class ProcessData {
     constructor() {
     }
  
-    parse(data) {
+    parse(data: string) {
+
+        interface switchDetail {
+            error?: string;
+            port: number;
+            media_type?: string;
+            vendor_name?: string;
+            part_number?: string;
+            serial_number?: string;
+            wavelength?: string;
+            temp?: {
+              value: number;
+              status: string;
+            };
+            'voltage_aux-1'?: {
+              value: number;
+              status: string;
+            };
+            tx_power?: {
+              value: number;
+              status: string;
+            };
+            rx_power?: {
+              value: number;
+              status: string;
+            };
+            tx_bias_current?: {
+              value: number;
+              status: string;
+            };
+        }
 
         // Remove newline's and trim remarks at the end from string
-        var nonew = data.replace((/  |\r\n|\n|\r/gm),'')
-        const index = nonew.indexOf('===')
+        var nonew: string = data.replace((/  |\r\n|\n|\r/gm),'')
+        const index: number = nonew.indexOf('===')
         if (index !== -1) nonew = nonew.slice(0, index).trim()
 
         // Split string on ports
-        const ports = nonew.split('Port')
+        const ports: string[] = nonew.split('Port')
 
         // Loop through ports-array to fill all items in switchDetails[]
-        var switchDetails = []
-        let match, lastIndex, status, value
+        var switchDetails: switchDetail[] = []
+        let match, lastIndex: number, status: string, value: number, text: string
         for (let i=0; i<ports.length; i++) {
-            match = ports[i].match(/:(\d+)/);
+            match = ports[i].match(/:(\d+)/)
             if (match && match[1]) {
+                lastIndex = switchDetails.length
                 value = parseInt(match[1], 10)
                 switchDetails.push({"port":value})
                 lastIndex = switchDetails.length - 1
                 match = ports[i].match(/Error:(.+)/)
                 if (match && match[1]) {
-                    value = match[1].trim()
-                    switchDetails[lastIndex].error = value
+                    text = match[1].trim()
+                    switchDetails[lastIndex].error = text
                 }
                 // match = ports[i].match(/Media Type:([^:]+)Vendor Name/)
                 match = ports[i].match(/Type:(.*?)Vendor/)
                 if (match && match[1]) {
-                    value = match[1].trim()
-                    switchDetails[lastIndex].media_type = value
+                    text = match[1].trim()
+                    switchDetails[lastIndex].media_type = text
                 }
                 match = ports[i].match(/Name :(.*?)Part/)
                 if (match && match[1]) {
-                    value = match[1].trim()
-                    switchDetails[lastIndex].vendor_name = value
+                    text = match[1].trim()
+                    switchDetails[lastIndex].vendor_name = text
                 }
                 match = ports[i].match(/Part Number :(.*?)Serial Number/)
                 if (match && match[1]) {
-                    value = match[1].trim()
-                    switchDetails[lastIndex].part_number = value
+                    text = match[1].trim()
+                    switchDetails[lastIndex].part_number = text
                 }
                 match = ports[i].match(/Serial Number :(.*?)Wavelength/)
                 if (match && match[1]) {
-                    value = match[1].trim()
-                    switchDetails[lastIndex].serial_number = value
+                    text = match[1].trim()
+                    switchDetails[lastIndex].serial_number = text
                 }
                 match = ports[i].match(/Wavelength:(.*?)Temp/)
                 if (match && match[1]) {
-                    value = match[1].trim()
-                    switchDetails[lastIndex].wavelength = value
+                    text = match[1].trim()
+                    switchDetails[lastIndex].wavelength = text
                 }
                 match = ports[i].match(/Temp \(Celsius\):(.*?)Status/)
                 if (match && match[1]) {
@@ -102,36 +133,5 @@ export class ProcessData {
             }
         }
         return switchDetails
-    }
-
-    downloadJson(jsonString) {
-
-        const downloadJson = document.querySelector('.download')
-
-        // Create a Blob with the JSON string
-        var blob = new Blob([jsonString], { type: "application/json" })
-
-        // Create a link element and trigger a download
-        var link = document.createElement('a')
-        link.href = URL.createObjectURL(blob)
-        link.download = 'switchDetails.json'
-                
-        // Append the link to the document
-        downloadJson.appendChild(link)
-        downloadJson.appendChild(document.createElement('br'))
-        
-        // Provide a button for the user to click and download
-        var downloadButton = document.createElement('button')
-        downloadButton.textContent = 'Download JSON'
-        downloadButton.addEventListener('click', function() {
-            link.click()
-        });
-        
-        downloadJson.appendChild(downloadButton)
-        
-        // Remove the link from the document when not needed
-        downloadJson.removeChild(link)
-        
-        // fs.writeFileSync('data/switchDetails.json', jsonString)
     }
 }
