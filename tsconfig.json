@@ -1,9 +1,12 @@
 {
     "compilerOptions": {
       "target": "es6",
-      "module": "commonjs",
+      "module": "es2015",
       "outDir": "./dist",
       "rootDir": "./src",
-      "strict": true
+      "strict": true,
+      "moduleResolution": "bundler",
+      "allowImportingTsExtensions": true,
+      "noEmit": true
     }
 }

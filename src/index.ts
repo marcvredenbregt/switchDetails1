@@ -11,7 +11,7 @@ app.use(express.static(path.join(__dirname, "/")));
 // app.use(express.static('public'))
 
 app.post('/switch-details', (req: Request, res: Response) => {
-  var file = fs.readFileSync('/Applications/XAMPP/xamppfiles/htdocs/switchDetails/data/switch-transciever-details.txt', 'utf8')
+  var file = fs.readFileSync('/Applications/XAMPP/xamppfiles/htdocs/switchDetails1/data/switch-transciever-details.txt', 'utf8')
   // console.log(file);
   res.send(new ProcessData().parse(file))
 })

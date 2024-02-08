@@ -1,39 +1,10 @@
+import { switchDetail } from "./switchDetail.ts"
 export class ProcessData {
 
     constructor() {
     }
  
     parse(data: string) {
-
-        interface switchDetail {
-            error?: string;
-            port: number;
-            media_type?: string;
-            vendor_name?: string;
-            part_number?: string;
-            serial_number?: string;
-            wavelength?: string;
-            temp?: {
-              value: number;
-              status: string;
-            };
-            'voltage_aux-1'?: {
-              value: number;
-              status: string;
-            };
-            tx_power?: {
-              value: number;
-              status: string;
-            };
-            rx_power?: {
-              value: number;
-              status: string;
-            };
-            tx_bias_current?: {
-              value: number;
-              status: string;
-            };
-        }
 
         // Remove newline's and trim remarks at the end from string
         var nonew: string = data.replace((/  |\r\n|\n|\r/gm),'')
