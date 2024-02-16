@@ -1,3 +1,6 @@
+/**
+ * Interface representing details of switch-data, in JSON format.
+ */
 export interface switchDetail {
     error?: string;
     port: number;

@@ -1,10 +1,32 @@
 import { switchDetail } from "./switchDetail"
+/**
+ * ProcessData class for parsing data
+ * @author Marc vredenbregt
+ */
 export class ProcessData {
 
     constructor() {
     }
- 
-    parse(data: string) {
+
+    static matchItems1: { [key: string]: string[] } = {
+                        'media_type': ['Type:', 'Vendor'],
+                        'vendor_name': ['Name :', 'Part'],
+                        'part_number': ['Part Number :', 'Serial Number'],
+                        'serial_number': ['Serial Number :', 'Wavelength'],
+                        'wavelength': ['Wavelength:', 'Temp']}
+    static matchItems2: { [key: string]: string[] } = {
+                        'temp': ['Temp.*?:', 'Status', 'Temp.*?Status :', 'Low Warn'],
+                        'voltage_aux-1': ['Voltage.*?:', 'Status', 'Voltage.*?Status :', 'Low Warn'],
+                        'tx_power': ['Tx Power.*?:', 'Status', 'Tx Power.*?Status :', 'Low Warn'],
+                        'rx_power': ['Rx Power.*?:', 'Status', 'Rx Power.*?Status :', 'Low Warn'],
+                        'tx_bias_current': ['Bias.*?:', 'Status', 'Bias.*?Status :', 'Low Warn']}
+
+    /**
+     * Parse the input data and return an array of objects in a specific format.
+     * @param data The input data string to parse.
+     * @returns An array of objects that conforms to the switchDetail interface.
+     */
+    parse(data: string): switchDetail[] {
 
         // Remove newline's and trim remarks at the end from string
         var nonew: string = data.replace((/  |\r\n|\n|\r/gm),'')
@@ -31,77 +53,43 @@ export class ProcessData {
                     text = match[1].trim()
                     switchDetails[lastIndex].error = text
                 }
-                // match = ports[i].match(/Media Type:([^:]+)Vendor Name/)
-                match = ports[i].match(/Type:(.*?)Vendor/)
-                if (match && match[1]) {
-                    text = match[1].trim()
-                    switchDetails[lastIndex].media_type = text
-                }
-                match = ports[i].match(/Name :(.*?)Part/)
-                if (match && match[1]) {
-                    text = match[1].trim()
-                    switchDetails[lastIndex].vendor_name = text
-                }
-                match = ports[i].match(/Part Number :(.*?)Serial Number/)
-                if (match && match[1]) {
-                    text = match[1].trim()
-                    switchDetails[lastIndex].part_number = text
-                }
-                match = ports[i].match(/Serial Number :(.*?)Wavelength/)
-                if (match && match[1]) {
-                    text = match[1].trim()
-                    switchDetails[lastIndex].serial_number = text
-                }
-                match = ports[i].match(/Wavelength:(.*?)Temp/)
-                if (match && match[1]) {
-                    text = match[1].trim()
-                    switchDetails[lastIndex].wavelength = text
-                }
-                match = ports[i].match(/Temp \(Celsius\):(.*?)Status/)
-                if (match && match[1]) {
-                    value = parseFloat(match[1])
-                    // value = Number(match[1]).toFixed(2)
-                    match = ports[i].match(/Temp.*?Status :(.*?)Low Warn/)
+
+                // Loop through matchItems1
+                for (let key in ProcessData.matchItems1) {
+                    match = ports[i].match(ProcessData.matchItems1[key][0]+'(.*?)'+ProcessData.matchItems1[key][1])
                     if (match && match[1]) {
-                        status = match[1].trim()
-                        switchDetails[lastIndex].temp = {"value":value, "status":status}
-                    }
+                        text = match[1].trim()
+                        switch (key) {
+                            // this is necessary because typescript will not take a string 'key' as an index for switchDetails-array:
+                            case 'media_type': switchDetails[lastIndex].media_type = text; break
+                            case 'vendor_name': switchDetails[lastIndex].vendor_name = text; break
+                            case 'part_number': switchDetails[lastIndex].part_number = text; break
+                            case 'serial_number': switchDetails[lastIndex].serial_number = text; break
+                            case 'wavelength': switchDetails[lastIndex].wavelength = text; break
+                            default: break
+                            // switchDetails[lastIndex][key] = text (this works in javascript!)
+                        }
+                    }    
                 }
-                match = ports[i].match(/Voltage.*?:(.*?)Status/)
-                if (match && match[1]) {
-                    value = parseFloat(match[1])
-                    match = ports[i].match(/Voltage.*?Status :(.*?)Low Warn/)
+
+                // Loop through matchItems2
+                for (let key in ProcessData.matchItems2) {
+                    match = ports[i].match(ProcessData.matchItems2[key][0]+'(.*?)'+ProcessData.matchItems2[key][1])
                     if (match && match[1]) {
-                        status = match[1].trim()
-                        switchDetails[lastIndex]['voltage_aux-1'] = {"value":value, "status":status}
-                    }
-                }
-                match = ports[i].match(/Tx Power.*?:(.*?)Status/)
-                if (match && match[1]) {
-                    value = parseFloat(match[1])
-                    match = ports[i].match(/Tx Power.*?Status :(.*?)Low Warn/)
-                    if (match && match[1]) {
-                        status = match[1].trim()
-                        switchDetails[lastIndex].tx_power = {"value":value, "status":status}
-                    }
-                }
-                match = ports[i].match(/Rx Power.*?:(.*?)Status/)
-                if (match && match[1]) {
-                    value = parseFloat(match[1])
-                    match = ports[i].match(/Rx Power.*?Status :(.*?)Low Warn/)
-                    if (match && match[1]) {
-                        status = match[1].trim()
-                        switchDetails[lastIndex].rx_power = {"value":value, "status":status}
-                    }
-                }
-                match = ports[i].match(/Bias.*?:(.*?)Status/)
-                if (match && match[1]) {
-                    value = parseFloat(match[1])
-                    match = ports[i].match(/Bias.*?Status :(.*?)Low Warn/)
-                    if (match && match[1]) {
-                        status = match[1].trim()
-                        switchDetails[lastIndex].tx_bias_current = {"value":value, "status":status}
-                    }
+                        value = parseFloat(match[1])
+                        match = ports[i].match(ProcessData.matchItems2[key][2]+'(.*?)'+ProcessData.matchItems2[key][3])
+                        if (match && match[1]) {
+                            status = match[1].trim()
+                            switch (key) {
+                                case 'temp': switchDetails[lastIndex].temp = {"value":value, "status":status}; break
+                                case 'voltage_aux-1': switchDetails[lastIndex]['voltage_aux-1'] = {"value":value, "status":status}; break
+                                case 'tx_power': switchDetails[lastIndex].tx_power = {"value":value, "status":status}; break
+                                case 'rx_power': switchDetails[lastIndex].rx_power = {"value":value, "status":status}; break
+                                case 'tx_bias_current': switchDetails[lastIndex].tx_bias_current = {"value":value, "status":status}; break
+                                default: break
+                            }
+                        }
+                    }    
                 }
             }
         }
