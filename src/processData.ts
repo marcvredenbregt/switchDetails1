@@ -1,4 +1,4 @@
-import { switchDetail } from "./switchDetail.ts"
+import { switchDetail } from "./switchDetail"
 export class ProcessData {
 
     constructor() {
@@ -24,6 +24,8 @@ export class ProcessData {
                 value = parseInt(match[1], 10)
                 switchDetails.push({"port":value})
                 lastIndex = switchDetails.length - 1
+
+                // Find error message
                 match = ports[i].match(/Error:(.+)/)
                 if (match && match[1]) {
                     text = match[1].trim()
