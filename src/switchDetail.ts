@@ -1,7 +1,8 @@
 /**
  * Interface representing details of switch-data, in JSON format.
+ * @author Marc vredenbregt
  */
-export interface switchDetail {
+export interface SwitchDetail {
     error?: string;
     port: number;
     media_type?: string;

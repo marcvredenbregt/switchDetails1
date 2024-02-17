@@ -1,6 +1,7 @@
-import { switchDetail } from "./switchDetail"
+import { SwitchDetail } from "./switchDetail"
+import { SearchString } from "./searchString"
 /**
- * ProcessData class for parsing data
+ * Class ProcessData for parsing data from an input string.
  * @author Marc vredenbregt
  */
 export class ProcessData {
@@ -26,7 +27,7 @@ export class ProcessData {
      * @param data The input data string to parse.
      * @returns An array of objects that conforms to the switchDetail interface.
      */
-    parse(data: string): switchDetail[] {
+    parse(data: string): SwitchDetail[] {
 
         // Remove newline's and trim remarks at the end from string
         var nonew: string = data.replace((/  |\r\n|\n|\r/gm),'')
@@ -37,8 +38,8 @@ export class ProcessData {
         const ports: string[] = nonew.split('Port')
 
         // Loop through ports-array to fill all items in switchDetails[]
-        var switchDetails: switchDetail[] = []
-        let match, lastIndex: number, status: string, value: number, text: string
+        var switchDetails: SwitchDetail[] = []
+        let match, lastIndex: number, status: string, value: number, text: string, search: SearchString
         for (let i=0; i<ports.length; i++) {
             match = ports[i].match(/:(\d+)/)
             if (match && match[1]) {
@@ -56,9 +57,9 @@ export class ProcessData {
 
                 // Loop through matchItems1
                 for (let key in ProcessData.matchItems1) {
-                    match = ports[i].match(ProcessData.matchItems1[key][0]+'(.*?)'+ProcessData.matchItems1[key][1])
-                    if (match && match[1]) {
-                        text = match[1].trim()
+                    search = new SearchString(ports[i], ProcessData.matchItems1[key][0], ProcessData.matchItems1[key][1])
+                    text = search.findText()
+                    if (text) {
                         switch (key) {
                             // this is necessary because typescript will not take a string 'key' as an index for switchDetails-array:
                             case 'media_type': switchDetails[lastIndex].media_type = text; break
@@ -74,12 +75,13 @@ export class ProcessData {
 
                 // Loop through matchItems2
                 for (let key in ProcessData.matchItems2) {
-                    match = ports[i].match(ProcessData.matchItems2[key][0]+'(.*?)'+ProcessData.matchItems2[key][1])
-                    if (match && match[1]) {
-                        value = parseFloat(match[1])
-                        match = ports[i].match(ProcessData.matchItems2[key][2]+'(.*?)'+ProcessData.matchItems2[key][3])
-                        if (match && match[1]) {
-                            status = match[1].trim()
+                    search = new SearchString(ports[i], ProcessData.matchItems2[key][0], ProcessData.matchItems2[key][1])
+                    text = search.findText()
+                    if (text) {
+                        value = parseFloat(text)
+                        search = new SearchString(ports[i], ProcessData.matchItems2[key][2], ProcessData.matchItems2[key][3])
+                        status = search.findText()
+                        if (status) {
                             switch (key) {
                                 case 'temp': switchDetails[lastIndex].temp = {"value":value, "status":status}; break
                                 case 'voltage_aux-1': switchDetails[lastIndex]['voltage_aux-1'] = {"value":value, "status":status}; break
